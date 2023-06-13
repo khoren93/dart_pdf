@@ -32,14 +32,14 @@ class PdfRasterBase {
   );
 
   factory PdfRasterBase.fromImage(im.Image image) {
-    final data = image
-        .convert(format: im.Format.uint8, numChannels: 4, noAnimation: true)
-        .toUint8List();
+    final data = image.getBytes(format: im.Format.rgba);
+    // .convert(format: im.Format.uint8, numChannels: 4, noAnimation: true)
+    // .toUint8List();
     return PdfRasterBase(image.width, image.height, true, data);
   }
 
   factory PdfRasterBase.fromPng(Uint8List png) {
-    final img = im.PngDecoder().decode(png)!;
+    final img = im.PngDecoder().decodeImage(png)!; //.decode(png)!;
     return PdfRasterBase.fromImage(img);
   }
 
@@ -51,26 +51,32 @@ class PdfRasterBase {
     PdfColor color,
   ) {
     final shadow = im.Image(
-      width: (width + spreadRadius * 2).round(),
-      height: (height + spreadRadius * 2).round(),
-      format: im.Format.uint8,
-      numChannels: 4,
+      (width + spreadRadius * 2).round(),
+      (height + spreadRadius * 2).round(),
+      // format: im.Format.uint8,
+      // numChannels: 4,
     );
 
     im.fillRect(
       shadow,
-      x1: spreadRadius.round(),
-      y1: spreadRadius.round(),
-      x2: (spreadRadius + width).round(),
-      y2: (spreadRadius + height).round(),
-      color: im.ColorUint8(4)
-        ..r = color.red * 255
-        ..g = color.green * 255
-        ..b = color.blue * 255
-        ..a = color.alpha * 255,
+      spreadRadius.round(),
+      spreadRadius.round(),
+      (spreadRadius + width).round(),
+      (spreadRadius + height).round(),
+      im.Color.fromRgba(
+        (color.red * 255).toInt(),
+        (color.green * 255).toInt(),
+        (color.blue * 255).toInt(),
+        (color.alpha * 255).toInt(),
+      ),
+      // im.Color(4)
+      //   ..r = color.red * 255
+      //   ..g = color.green * 255
+      //   ..b = color.blue * 255
+      //   ..a = color.alpha * 255,
     );
 
-    return im.gaussianBlur(shadow, radius: blurRadius.round());
+    return im.gaussianBlur(shadow, blurRadius.round());
   }
 
   static im.Image shadowEllipse(
@@ -81,25 +87,31 @@ class PdfRasterBase {
     PdfColor color,
   ) {
     final shadow = im.Image(
-      width: (width + spreadRadius * 2).round(),
-      height: (height + spreadRadius * 2).round(),
-      format: im.Format.uint8,
-      numChannels: 4,
+      (width + spreadRadius * 2).round(),
+      (height + spreadRadius * 2).round(),
+      // format: im.Format.uint8,
+      // numChannels: 4,
     );
 
     im.fillCircle(
       shadow,
-      x: (spreadRadius + width / 2).round(),
-      y: (spreadRadius + height / 2).round(),
-      radius: (width / 2).round(),
-      color: im.ColorUint8(4)
-        ..r = color.red * 255
-        ..g = color.green * 255
-        ..b = color.blue * 255
-        ..a = color.alpha * 255,
+      (spreadRadius + width / 2).round(),
+      (spreadRadius + height / 2).round(),
+      (width / 2).round(),
+      im.Color.fromRgba(
+        (color.red * 255).toInt(),
+        (color.green * 255).toInt(),
+        (color.blue * 255).toInt(),
+        (color.alpha * 255).toInt(),
+      ),
+      //  im.ColorUint8(4)
+      //   ..r = color.red * 255
+      //   ..g = color.green * 255
+      //   ..b = color.blue * 255
+      //   ..a = color.alpha * 255,
     );
 
-    return im.gaussianBlur(shadow, radius: blurRadius.round());
+    return im.gaussianBlur(shadow, blurRadius.round());
   }
 
   /// The width of the image
@@ -120,18 +132,18 @@ class PdfRasterBase {
   /// Convert to a PNG image
   Future<Uint8List> toPng() async {
     final img = asImage();
-    return im.PngEncoder().encode(img);
+    return Uint8List.fromList(im.PngEncoder().encodeImage(img));
   }
 
   /// Returns the image as an [Image] object from the pub:image library
   im.Image asImage() {
     return im.Image.fromBytes(
-      width: width,
-      height: height,
-      bytes: pixels.buffer,
-      bytesOffset: pixels.offsetInBytes,
-      format: im.Format.uint8,
-      numChannels: 4,
+      width,
+      height,
+      pixels,
+      // bytesOffset: pixels.offsetInBytes,
+      // format: im.Format.uint8,
+      // numChannels: 4,
     );
   }
 }
